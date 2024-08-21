@@ -26,12 +26,13 @@ app.post("/users", async (req, res) => {
 
 app.post("/users/login", async (req, res) => {
   const user = users.find((user) => user.name == req.body.name);
-  if (user === undefined) return res.status(400).send("cannot find user");
+  if (!user) return res.status(400).send("cannot find user");
+  const isSuccess = await bcrypt.compare(req.body.password, user.password);
   try {
-    if (await bcrypt.compare(req.body.password, user.password)) {
-      res.send("Success");
+    if (isSuccess) {
+      res.send({ isSuccess: true, message: "Success" });
     } else {
-      res.send("Wrong Password");
+      res.send({ isSuccess: false, message: "Wrong Password" });
     }
   } catch {
     res.status(500).send();
